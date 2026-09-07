@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据展示平台</title>
+    <style>
+        /* ========== 基础重置 ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+        
+        /* ========== 容器样式（可修改） ========== */
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 32px 28px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+            border: 1px solid #eef2f7;
+        }
+
+        /* ========== 头部 ========== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .header-icon {
+            font-size: 32px;
+        }
+        .header-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a2a3a;
+            letter-spacing: -0.3px;
+        }
+        .header-sub {
+            font-size: 14px;
+            color: #7a8a9e;
+            background: #f0f4fa;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-weight: 500;
+        }
+        .stats-badge {
+            background: #eef3fa;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 14px;
+            color: #2a3f5a;
+            font-weight: 500;
+        }
+
+        /* ========== 描述文字 ========== */
+        .description {
+            color: #5a6f84;
+            font-size: 15px;
+            margin-bottom: 18px;
+            padding: 10px 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #3b6ea0;
+        }
+
+        /* ========== 工具栏 ========== */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            gap: 8px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #dce3ed;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+            background: #fafcff;
+        }
+        .search-box input:focus {
+            border-color: #3b6ea0;
+            box-shadow: 0 0 0 3px rgba(59, 110, 160, 0.12);
+        }
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: #1a2a3a;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0f1c2a;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #eef3fa;
+            color: #1a2a3a;
+        }
+        .btn-secondary:hover {
+            background: #e2e9f2;
+        }
+        .btn-success {
+            background: #1e7b4a;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #16633b;
+        }
+
+        /* ========== 表格 ========== */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid #e8edf4;
+            background: white;
+            margin-top: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 400px;
+        }
+        th {
+            background: #f5f8fd;
+            color: #1a2a3a;
+            font-weight: 600;
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 2px solid #e0e7f0;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eef3f8;
+            color: #1f334d;
+            word-break: break-word;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background: #f8fafd;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #8a9aae;
+        }
+        .empty-state span {
+            font-size: 42px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* ========== 页脚 ========== */
+        .footer {
+            margin-top: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 13px;
+            color: #7a8a9e;
+            padding-top: 14px;
+            border-top: 1px solid #eef3f8;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 640px) {
+            .container { padding: 18px 14px; }
+            .header-title { font-size: 20px; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .search-box { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <!-- ====== 头部（可配置） ====== -->
+    <div class="header">
+        <div class="header-left">
+            <span class="header-icon" id="headerIcon">📊</span>
+            <span class="header-title" id="headerTitle">数据档案</span>
+            <span class="header-sub" id="headerSub">共享平台</span>
+        </div>
+        <span class="stats-badge" id="rowCount">0 条</span>
+    </div>
+
+    <!-- ====== 描述文字（可配置） ====== -->
+    <div class="description" id="description">
+        📌 以下数据为内部共享信息，仅供查阅，数据实时更新。
+    </div>
+
+    <!-- ====== 工具栏 ====== -->
+    <div class="toolbar">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 搜索关键词...">
+            <button class="btn btn-primary" onclick="searchData()">查找</button>
+            <button class="btn btn-secondary" onclick="resetSearch()">重置</button>
+        </div>
+        <button class="btn btn-success" onclick="exportCSV()">📥 导出CSV</button>
+    </div>
+
+    <!-- ====== 表格 ====== -->
+    <div class="table-wrapper">
+        <table>
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody">
+                <tr><td class="empty-state"><span>📂</span>正在加载数据...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ====== 页脚（可配置） ====== -->
+    <div class="footer">
+        <span id="footerLeft">© 2026 数据共享平台</span>
+        <span id="footerRight">数据仅供内部使用</span>
+    </div>
+</div>
+
+<script>
+// ================================================================
+//  ⬇️⬇️⬇️  ⚙️  配 置 区 域  —  修 改 这 里 即 可  ⚙️  ⬇️⬇️⬇️
+// ================================================================
+
+// ---------- 1. 您的数据（粘贴JSON） ----------
+// 提示：用之前的工具把Excel转成JSON，粘贴到下面的数组中
+const DATA = [
+    {
+        "Name": "8XIR",
+        "Title": "Structure of pasireotide-SSTR3 G protein complex",
+        "Method": "ELECTRON MICROSCOPY",
+        "Resolution": "2.52 Å"
+    },
+    {
+        "Name": "4ZGM",
+        "Title": "Crystal structure of Semaglutide...",
+        "Method": "X-RAY DIFFRACTION",
+        "Resolution": "1.80 Å"
+    },
+    {
+        "Name": "7FIM",
+        "Title": "Cryo-EM structure...",
+        "Method": "ELECTRON MICROSCOPY",
+        "Resolution": "3.40 Å"
+    }
+];
+
+
+// ---------- 2. 自定义显示顺序 ----------
+// 写您想显示的列名（按顺序），留空则自动按数据顺序显示
+// 例如：["姓名", "职位", "部门", "入职日期"]
+const COLUMN_ORDER = [];  // 留空 = 自动顺序
+
+// ---------- 3. 隐藏某些列 ----------
+// 写您不想显示的列名
+const HIDDEN_COLUMNS = [];  // 例如：["状态", "备注"]
+
+// ---------- 4. 外观配置 ----------
+const CONFIG = {
+    // 头部
+    icon: "📊",              // 图标
+    title: "数据档案",       // 主标题
+    subtitle: "共享平台",    // 副标题
+    
+    // 描述文字
+    description: "📌 以下数据为内部共享信息，仅供查阅，数据实时更新。",
+    
+    // 页脚
+    footerLeft: "© 2026 数据共享平台",
+    footerRight: "数据仅供内部使用",
+    
+    // 表格颜色（修改CSS中的颜色值即可，见上方style）
+    // 主要颜色变量在CSS中，搜索 #1a2a3a #3b6ea0 等替换
+};
+
+// ⬆️⬆️⬆️  配 置 结 束  ⬆️⬆️⬆️
+// ================================================================
+
+
+// ================================================================
+//  🚀 以下代码自动运行，无需修改
+// ================================================================
+
+// 应用外观配置
+document.getElementById('headerIcon').textContent = CONFIG.icon;
+document.getElementById('headerTitle').textContent = CONFIG.title;
+document.getElementById('headerSub').textContent = CONFIG.subtitle;
+document.getElementById('description').textContent = CONFIG.description;
+document.getElementById('footerLeft').textContent = CONFIG.footerLeft;
+document.getElementById('footerRight').textContent = CONFIG.footerRight;
+
+// 准备数据
+let headers = [];
+let filteredData = [];
+let allData = [];
+
+function getDisplayHeaders() {
+    if (!allData.length) return [];
+    const allKeys = Object.keys(allData[0]);
+    // 过滤掉隐藏列
+    const visible = allKeys.filter(k => !HIDDEN_COLUMNS.includes(k));
+    // 如果指定了顺序，按顺序排列
+    if (COLUMN_ORDER && COLUMN_ORDER.length) {
+        const ordered = COLUMN_ORDER.filter(k => visible.includes(k));
+        const rest = visible.filter(k => !COLUMN_ORDER.includes(k));
+        return [...ordered, ...rest];
+    }
+    return visible;
+}
+
+function init() {
+    allData = DATA.slice();
+    if (!allData.length) {
+        document.getElementById('tableBody').innerHTML = 
+            '<tr><td class="empty-state"><span>📭</span>暂无数据<br><small>请添加数据到 DATA 数组</small></td></tr>';
+        document.getElementById('rowCount').textContent = '0 条';
+        return;
+    }
+    headers = getDisplayHeaders();
+    filteredData = allData.slice();
+    renderTable();
+}
+
+function renderTable() {
+    const thead = document.getElementById('tableHead');
+    const tbody = document.getElementById('tableBody');
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+
+    if (!filteredData.length) {
+        const colspan = Math.max(headers.length, 1);
+        tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty-state"><span>🔍</span>没有匹配的数据</td></tr>`;
+        document.getElementById('rowCount').textContent = '0 条';
+        return;
+    }
+
+    // 表头
+    const trHead = document.createElement('tr');
+    headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        trHead.appendChild(th);
+    });
+    thead.appendChild(trHead);
+
+    // 数据行
+    filteredData.forEach(row => {
+        const tr = document.createElement('tr');
+        headers.forEach(h => {
+            const td = document.createElement('td');
+            td.textContent = row[h] !== undefined && row[h] !== null ? row[h] : '';
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('rowCount').textContent = `${filteredData.length} 条`;
+}
+
+// 搜索
+function searchData() {
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    if (!query) {
+        filteredData = allData.slice();
+    } else {
+        filteredData = allData.filter(row => {
+            return headers.some(h => {
+                const val = row[h];
+                return val && String(val).toLowerCase().includes(query);
+            });
+        });
+    }
+    renderTable();
+}
+
+function resetSearch() {
+    document.getElementById('searchInput').value = '';
+    filteredData = allData.slice();
+    renderTable();
+}
+
+// 导出CSV
+function exportCSV() {
+    if (!filteredData.length) {
+        alert('没有数据可导出');
+        return;
+    }
+    try {
+        const rows = [headers.slice()];
+        filteredData.forEach(row => {
+            const line = headers.map(h => {
+                let val = row[h];
+                if (val === undefined || val === null) val = '';
+                const str = String(val);
+                if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                    return `"${str.replace(/"/g, '""')}"`;
+                }
+                return str;
+            });
+            rows.push(line);
+        });
+        const csvContent = rows.map(row => row.join(',')).join('\n');
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `数据导出_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    } catch (e) {
+        alert('导出失败: ' + e.message);
+    }
+}
+
+// 启动
+init();
+</script>
+</body>
+</html>
