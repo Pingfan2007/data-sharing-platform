@@ -3,420 +3,808 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MolBiC · 分子生物活性数据库</title>
-    <!-- Leaflet CSS (地图) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>丁苯酞/伏环孢素知识库</title>
     <style>
-        /* ===== 全局重置 ===== */
+        /* ===== 全局样式 - 三色学术风格 ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-            background: #f5f8fc;
-            color: #1a2a3a;
+            font-family: 'Times New Roman', '宋体', 'SimSun', serif;
+            background: rgb(175, 208, 228);
+            color: rgb(155, 155, 186);
             min-height: 100vh;
         }
+        a { text-decoration: none; color: inherit; }
+        button { cursor: pointer; font-family: inherit; }
 
-        /* ===== 顶部导航栏 ===== */
+        /* ===== 顶部导航 ===== */
         .navbar {
-            background: #0b1a2e;
-            color: white;
-            padding: 18px 48px;
+            background: white;
+            color: rgb(155, 155, 186);
+            padding: 12px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 16px;
-            border-bottom: 3px solid #2a6a9e;
+            gap: 12px;
+            border-bottom: 3px solid rgb(124, 207, 211);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-        .navbar-brand {
+        .navbar .brand {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 28px;
+            gap: 20px;
+            font-size: 20px;
             font-weight: 700;
-            letter-spacing: -0.5px;
+            font-family: 'Times New Roman', serif;
+            letter-spacing: 0.5px;
         }
-        .navbar-brand .logo-icon {
-            font-size: 32px;
+        .navbar .brand .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
-        .navbar-brand .brand-quote {
-            font-size: 15px;
+        .navbar .brand .logo-group .logo-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
             font-weight: 400;
-            color: #8ab4d6;
-            margin-left: 6px;
-            font-style: italic;
+            color: rgb(155, 155, 186);
+            font-family: '宋体', serif;
         }
-        .navbar-brand .brand-sub {
+        .navbar .brand .logo-group .logo-item .logo-placeholder {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+        .navbar .brand .logo-group .logo-item .logo-placeholder.hebmu {
+            background: rgb(124, 207, 211);
+        }
+        .navbar .brand .logo-group .logo-item .logo-placeholder.cspc {
+            background: rgb(124, 207, 211);
+        }
+        .navbar .brand .title {
+            font-size: 22px;
+            font-weight: 700;
+            color: rgb(124, 207, 211);
+            letter-spacing: 1px;
+        }
+        .navbar .brand .title .sub {
             font-size: 14px;
             font-weight: 400;
-            color: #6a9ac0;
-            display: block;
-            margin-top: 2px;
-            letter-spacing: 0.3px;
+            color: rgb(155, 155, 186);
+            margin-left: 8px;
+            font-style: italic;
         }
-        .navbar-menu {
+        .navbar .nav-actions {
             display: flex;
-            gap: 32px;
-            font-size: 16px;
-            font-weight: 500;
             align-items: center;
+            gap: 16px;
+            font-size: 14px;
         }
-        .navbar-menu a {
-            color: #c0d4e8;
-            text-decoration: none;
+        .navbar .nav-actions .back-btn {
+            color: rgb(155, 155, 186);
+            cursor: pointer;
+            padding: 6px 16px;
+            border: 1px solid rgb(175, 208, 228);
+            border-radius: 4px;
             transition: 0.2s;
-            padding: 4px 0;
-            border-bottom: 2px solid transparent;
+            font-size: 13px;
+            font-family: '宋体', serif;
+            background: white;
         }
-        .navbar-menu a:hover,
-        .navbar-menu a.active {
+        .navbar .nav-actions .back-btn:hover {
+            background: rgb(124, 207, 211);
             color: white;
-            border-bottom-color: #4d8fc5;
+            border-color: rgb(124, 207, 211);
+        }
+        .navbar .nav-actions .page-indicator {
+            color: rgb(155, 155, 186);
+            font-size: 13px;
+            font-family: '宋体', serif;
+        }
+        .navbar .nav-actions .page-indicator span {
+            color: rgb(124, 207, 211);
         }
 
-        /* ===== 主体容器 ===== */
+        /* ===== 主容器 ===== */
         .container {
-            max-width: 1200px;
+            max-width: 1300px;
             margin: 0 auto;
             padding: 28px 32px 40px;
         }
 
-        /* ===== 页面标题 ===== */
-        .page-header {
-            margin-bottom: 28px;
-            border-bottom: 2px solid #e4ecf4;
-            padding-bottom: 16px;
+        /* ===== 页面切换 ===== */
+        .page {
+            display: none;
+            animation: fadeIn 0.35s ease;
         }
-        .page-header h1 {
-            font-size: 34px;
-            font-weight: 700;
-            color: #0b1a2e;
-        }
-        .page-header h1 .highlight {
-            color: #2a6a9e;
-        }
-        .page-header .tagline {
-            font-size: 18px;
-            color: #3a5a74;
-            margin-top: 4px;
-            font-weight: 400;
+        .page.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== 搜索区域 ===== */
-        .search-hero {
-            background: linear-gradient(135deg, #eaf1fa 0%, #d6e4f2 100%);
-            border-radius: 14px;
-            padding: 28px 34px;
-            margin-bottom: 32px;
-            border: 1px solid #c8dae8;
+        /* ===== 页面1：首页 ===== */
+        .hero {
+            text-align: center;
+            padding: 30px 20px 24px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid rgb(175, 208, 228);
+            box-shadow: 0 2px 12px rgba(124,207,211,0.08);
+            margin-bottom: 28px;
         }
-        .search-hero .search-label {
-            font-size: 18px;
-            font-weight: 600;
-            color: #0b1a2e;
-            margin-bottom: 12px;
-        }
-        .search-hero .search-row {
+        .hero .top-logos {
             display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 16px;
             flex-wrap: wrap;
+        }
+        .hero .top-logos .logo-block {
+            display: flex;
+            align-items: center;
             gap: 12px;
         }
-        .search-hero .search-row input {
-            flex: 1;
-            min-width: 200px;
-            padding: 13px 20px;
-            border: 2px solid #b8cce0;
+        .hero .top-logos .logo-block .logo-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(124,207,211,0.25);
+        }
+        .hero .top-logos .logo-block .logo-circle.hebmu {
+            background: rgb(124, 207, 211);
+        }
+        .hero .top-logos .logo-block .logo-circle.cspc {
+            background: rgb(124, 207, 211);
+        }
+        .hero .top-logos .logo-block .logo-text {
+            font-size: 14px;
+            color: rgb(155, 155, 186);
+            font-weight: 600;
+            font-family: '宋体', serif;
+            line-height: 1.4;
+            text-align: left;
+        }
+        .hero .top-logos .logo-block .logo-text small {
+            display: block;
+            font-weight: 400;
+            font-size: 11px;
+            color: rgb(155, 155, 186);
+            opacity: 0.7;
+        }
+        .hero .divider-line {
+            width: 80px;
+            height: 3px;
+            background: rgb(124, 207, 211);
+            margin: 6px auto 12px;
+            border-radius: 2px;
+        }
+        .hero h1 {
+            font-size: 34px;
+            font-weight: 700;
+            color: rgb(124, 207, 211);
+            font-family: 'Times New Roman', serif;
+            letter-spacing: 1px;
+        }
+        .hero h1 .highlight {
+            color: rgb(124, 207, 211);
+        }
+        .hero .tagline {
+            font-size: 16px;
+            color: rgb(155, 155, 186);
+            margin-top: 2px;
+            font-style: italic;
+            font-family: 'Times New Roman', serif;
+        }
+        .hero .desc {
+            max-width: 750px;
+            margin: 14px auto 0;
+            color: rgb(155, 155, 186);
+            font-size: 14px;
+            line-height: 1.9;
+            padding: 16px 24px;
+            background: rgb(175, 208, 228);
+            border-radius: 8px;
+            border-left: 4px solid rgb(124, 207, 211);
+            text-align: left;
+            font-family: '宋体', serif;
+        }
+        .hero .desc strong {
+            color: rgb(124, 207, 211);
+        }
+
+        /* 导航标签 */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 28px;
+        }
+        .nav-tabs button {
+            padding: 10px 32px;
+            border: 2px solid rgb(175, 208, 228);
+            background: white;
             border-radius: 8px;
             font-size: 15px;
+            font-weight: 600;
+            color: rgb(155, 155, 186);
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: '宋体', serif;
+        }
+        .nav-tabs button:hover {
+            border-color: rgb(124, 207, 211);
+            color: rgb(124, 207, 211);
+        }
+        .nav-tabs button.active {
+            background: rgb(124, 207, 211);
+            color: white;
+            border-color: rgb(124, 207, 211);
+        }
+
+        /* 搜索框 */
+        .search-area {
+            max-width: 620px;
+            margin: 0 auto 28px;
+            background: white;
+            border-radius: 12px;
+            padding: 24px 28px;
+            box-shadow: 0 2px 12px rgba(124,207,211,0.08);
+            border: 1px solid rgb(175, 208, 228);
+            display: none;
+        }
+        .search-area.active {
+            display: block;
+        }
+        .search-area .label {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgb(124, 207, 211);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: '宋体', serif;
+        }
+        .search-area .search-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .search-area .search-row select {
+            flex: 1;
+            min-width: 180px;
+            padding: 11px 16px;
+            border: 1.5px solid rgb(175, 208, 228);
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            outline: none;
+            transition: 0.2s;
+            font-family: '宋体', serif;
+            color: rgb(155, 155, 186);
+        }
+        .search-area .search-row select:focus {
+            border-color: rgb(124, 207, 211);
+            box-shadow: 0 0 0 3px rgba(124,207,211,0.15);
+        }
+        .search-area .search-row button {
+            padding: 11px 32px;
+            background: rgb(124, 207, 211);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s;
+            white-space: nowrap;
+            font-family: '宋体', serif;
+            letter-spacing: 0.5px;
+        }
+        .search-area .search-row button:hover {
+            background: rgb(100, 185, 190);
+            transform: translateY(-1px);
+        }
+        .search-area .search-row button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== Contact 页面 ===== */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        @media (max-width: 768px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .contact-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px 28px;
+            border: 1px solid rgb(175, 208, 228);
+            box-shadow: 0 2px 12px rgba(124,207,211,0.06);
+        }
+        .contact-card h3 {
+            font-size: 18px;
+            color: rgb(124, 207, 211);
+            margin-bottom: 16px;
+            font-family: 'Times New Roman', serif;
+            border-bottom: 2px solid rgb(175, 208, 228);
+            padding-bottom: 10px;
+        }
+        .contact-card .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgb(175, 208, 228);
+            font-size: 14px;
+            color: rgb(155, 155, 186);
+            font-family: '宋体', serif;
+        }
+        .contact-card .contact-item:last-child {
+            border-bottom: none;
+        }
+        .contact-card .contact-item .icon {
+            font-size: 18px;
+            min-width: 30px;
+            color: rgb(124, 207, 211);
+        }
+        .contact-card .contact-item .label {
+            font-weight: 600;
+            color: rgb(124, 207, 211);
+            min-width: 70px;
+        }
+
+        /* 反馈表格 */
+        .feedback-table {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid rgb(175, 208, 228);
+            overflow: hidden;
+            margin-top: 16px;
+        }
+        .feedback-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .feedback-table th {
+            background: rgb(175, 208, 228);
+            padding: 10px 14px;
+            text-align: left;
+            color: rgb(155, 155, 186);
+            font-weight: 600;
+            font-family: '宋体', serif;
+            border-bottom: 2px solid rgb(124, 207, 211);
+        }
+        .feedback-table td {
+            padding: 9px 14px;
+            border-bottom: 1px solid rgb(175, 208, 228);
+            color: rgb(155, 155, 186);
+            font-family: '宋体', serif;
+        }
+        .feedback-table tr:hover td {
+            background: rgb(175, 208, 228);
+            opacity: 0.6;
+        }
+        .feedback-table .empty-row td {
+            text-align: center;
+            padding: 30px;
+            color: rgb(155, 155, 186);
+            opacity: 0.6;
+        }
+
+        /* 反馈表单 */
+        .feedback-form {
+            background: white;
+            border-radius: 12px;
+            padding: 24px 28px;
+            border: 1px solid rgb(175, 208, 228);
+            margin-top: 16px;
+        }
+        .feedback-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 600px) {
+            .feedback-form .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .feedback-form .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .feedback-form .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgb(124, 207, 211);
+            font-family: '宋体', serif;
+        }
+        .feedback-form .form-group input,
+        .feedback-form .form-group textarea,
+        .feedback-form .form-group select {
+            padding: 9px 14px;
+            border: 1.5px solid rgb(175, 208, 228);
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: '宋体', serif;
+            color: rgb(155, 155, 186);
             outline: none;
             transition: 0.2s;
             background: white;
         }
-        .search-hero .search-row input:focus {
-            border-color: #2a6a9e;
-            box-shadow: 0 0 0 4px rgba(42, 106, 158, 0.12);
+        .feedback-form .form-group input:focus,
+        .feedback-form .form-group textarea:focus,
+        .feedback-form .form-group select:focus {
+            border-color: rgb(124, 207, 211);
+            box-shadow: 0 0 0 3px rgba(124,207,211,0.12);
         }
-        .search-hero .search-row button {
-            padding: 13px 32px;
-            background: #0b1a2e;
-            color: white;
+        .feedback-form .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .feedback-form .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .feedback-form .form-actions button {
+            padding: 10px 32px;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: 600;
+            font-family: '宋体', serif;
             cursor: pointer;
             transition: 0.2s;
         }
-        .search-hero .search-row button:hover {
-            background: #1a3050;
-            transform: translateY(-1px);
+        .feedback-form .form-actions .btn-submit {
+            background: rgb(124, 207, 211);
+            color: white;
         }
-        .search-hero .search-hint {
-            font-size: 13px;
-            color: #4a6a84;
-            margin-top: 10px;
+        .feedback-form .form-actions .btn-submit:hover {
+            background: rgb(100, 185, 190);
         }
-        .search-hero .search-hint span {
-            background: white;
-            padding: 2px 14px;
-            border-radius: 30px;
-            margin: 0 4px;
-            border: 1px solid #c8dae8;
-            font-size: 12px;
+        .feedback-form .form-actions .btn-reset-feedback {
+            background: rgb(175, 208, 228);
+            color: rgb(155, 155, 186);
+        }
+        .feedback-form .form-actions .btn-reset-feedback:hover {
+            background: rgb(160, 190, 210);
         }
 
-        /* ===== 搜索结果显示区 ===== */
-        .search-results {
-            display: none;
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 14px;
+            max-width: 780px;
+            margin: 0 auto;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 14px 16px;
+            text-align: center;
+            border: 1px solid rgb(175, 208, 228);
+            transition: 0.2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(124,207,211,0.15);
+            border-color: rgb(124, 207, 211);
+        }
+        .stat-card .number {
+            font-size: 26px;
+            font-weight: 700;
+            color: rgb(124, 207, 211);
+            font-family: 'Times New Roman', serif;
+        }
+        .stat-card .label {
+            font-size: 13px;
+            color: rgb(155, 155, 186);
+            margin-top: 2px;
+            font-family: '宋体', serif;
+        }
+
+        /* ===== 页面2：药物卡片 ===== */
+        .drug-header {
             background: white;
             border-radius: 12px;
-            border: 1px solid #dce6f0;
-            overflow: hidden;
-            margin-bottom: 28px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            padding: 22px 28px;
+            border: 1px solid rgb(175, 208, 228);
+            margin-bottom: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-left: 4px solid rgb(124, 207, 211);
         }
-        .search-results.active {
-            display: block;
+        .drug-header .drug-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: rgb(124, 207, 211);
+            font-family: 'Times New Roman', serif;
         }
-        .search-results .result-header {
-            padding: 14px 24px;
-            background: #f5f8fc;
-            border-bottom: 1px solid #e4ecf4;
+        .drug-header .drug-code {
+            font-size: 15px;
+            color: rgb(155, 155, 186);
+            margin-left: 12px;
+            font-weight: 400;
+        }
+        .drug-header .drug-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 6px;
+            font-size: 14px;
+            color: rgb(155, 155, 186);
+            font-family: '宋体', serif;
+        }
+        .drug-header .drug-meta .tag {
+            background: rgb(175, 208, 228);
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+        }
+
+        /* 栏目卡片 */
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .section-card {
+            background: white;
+            border-radius: 10px;
+            padding: 18px 20px;
+            border: 1px solid rgb(175, 208, 228);
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            position: relative;
+            text-align: center;
+        }
+        .section-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(124,207,211,0.15);
+            border-color: rgb(124, 207, 211);
+        }
+        .section-card .icon { font-size: 28px; }
+        .section-card .title {
+            font-size: 15px;
+            font-weight: 600;
+            color: rgb(124, 207, 211);
+            margin-top: 4px;
+            font-family: '宋体', serif;
+        }
+        .section-card .count {
+            font-size: 13px;
+            color: rgb(155, 155, 186);
+            margin-top: 2px;
+            font-family: '宋体', serif;
+        }
+        .section-card .badge-count {
+            display: inline-block;
+            background: rgb(175, 208, 228);
+            padding: 1px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: rgb(155, 155, 186);
+            margin-top: 4px;
+            font-family: '宋体', serif;
+        }
+        .section-card .arrow-hint {
+            color: rgb(175, 208, 228);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* ===== 页面3：数据表格 ===== */
+        .table-toolbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+            margin-bottom: 14px;
+            background: white;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 1px solid rgb(175, 208, 228);
         }
-        .search-results .result-header .count {
+        .table-toolbar .info {
+            font-size: 15px;
             font-weight: 600;
-            color: #0b1a2e;
+            color: rgb(124, 207, 211);
+            font-family: '宋体', serif;
         }
-        .search-results .result-header .close-btn {
-            background: none;
+        .table-toolbar .info small {
+            font-weight: 400;
+            color: rgb(155, 155, 186);
+            font-size: 13px;
+        }
+        .table-toolbar .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .table-toolbar .actions input {
+            padding: 7px 14px;
+            border: 1.5px solid rgb(175, 208, 228);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            min-width: 150px;
+            font-family: '宋体', serif;
+            color: rgb(155, 155, 186);
+        }
+        .table-toolbar .actions input:focus {
+            border-color: rgb(124, 207, 211);
+        }
+        .table-toolbar .actions button {
+            padding: 7px 16px;
             border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #7a8a9e;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.15s;
+            font-family: '宋体', serif;
         }
-        .search-results .result-header .close-btn:hover {
-            color: #c0392b;
+        .table-toolbar .actions .btn-search {
+            background: rgb(124, 207, 211);
+            color: white;
         }
-        .search-results table {
+        .table-toolbar .actions .btn-search:hover {
+            background: rgb(100, 185, 190);
+        }
+        .table-toolbar .actions .btn-reset {
+            background: rgb(175, 208, 228);
+            color: rgb(155, 155, 186);
+        }
+        .table-toolbar .actions .btn-reset:hover {
+            background: rgb(160, 190, 210);
+        }
+        .table-toolbar .actions .btn-export {
+            background: rgb(124, 207, 211);
+            color: white;
+        }
+        .table-toolbar .actions .btn-export:hover {
+            background: rgb(100, 185, 190);
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid rgb(175, 208, 228);
+            overflow: hidden;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+        }
+        .table-wrapper table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 13px;
         }
-        .search-results th {
-            background: #f8fafc;
-            padding: 10px 18px;
+        .table-wrapper th {
+            background: rgb(175, 208, 228);
+            padding: 10px 14px;
             text-align: left;
-            border-bottom: 2px solid #dce6f0;
-            color: #0b1a2e;
-        }
-        .search-results td {
-            padding: 9px 18px;
-            border-bottom: 1px solid #eef3f8;
-            color: #1a2a3a;
-        }
-        .search-results tr:hover td {
-            background: #f8fafd;
-        }
-        .search-results .no-result {
-            padding: 30px;
-            text-align: center;
-            color: #7a9aaa;
-        }
-
-        /* ===== 功能区块 ===== */
-        .section-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #0b1a2e;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 3px solid #2a6a9e;
-            display: inline-block;
-        }
-
-        .two-col-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 36px;
-        }
-        @media (max-width: 768px) {
-            .two-col-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .feature-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px 28px;
-            border: 1px solid #e4ecf4;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .feature-card h3 {
-            font-size: 18px;
-            color: #0b1a2e;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .feature-card ul {
-            list-style: none;
-            padding: 0;
-        }
-        .feature-card ul li {
-            padding: 7px 0;
-            border-bottom: 1px solid #f0f4f9;
-            color: #2a4a64;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .feature-card ul li:last-child {
-            border-bottom: none;
-        }
-        .feature-card ul li .li-icon {
-            font-size: 18px;
-            width: 28px;
-            text-align: center;
-        }
-
-        .stat-list {
-            background: white;
-            border-radius: 12px;
-            padding: 24px 28px;
-            border: 1px solid #e4ecf4;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .stat-list h3 {
-            font-size: 18px;
-            color: #0b1a2e;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .stat-list ul {
-            list-style: none;
-            padding: 0;
-        }
-        .stat-list ul li {
-            padding: 7px 0;
-            border-bottom: 1px solid #f0f4f9;
-            color: #2a4a64;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .stat-list ul li:last-child {
-            border-bottom: none;
-        }
-        .stat-list ul li .li-icon {
-            font-size: 18px;
-            width: 28px;
-            text-align: center;
-        }
-
-        /* ===== 引用区块 ===== */
-        .citation-block {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 20px 28px;
-            border-left: 4px solid #2a6a9e;
-            margin-bottom: 32px;
-            font-size: 13px;
-            color: #2a4a64;
-            line-height: 1.7;
-        }
-        .citation-block strong {
-            color: #0b1a2e;
-        }
-
-        /* ===== 地图 ===== */
-        .map-container {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e4ecf4;
-            overflow: hidden;
-            margin-bottom: 32px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .map-container .map-header {
-            padding: 12px 24px;
-            background: #f5f8fc;
-            border-bottom: 1px solid #e4ecf4;
+            border-bottom: 2px solid rgb(124, 207, 211);
+            color: rgb(155, 155, 186);
             font-weight: 600;
-            color: #0b1a2e;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-family: '宋体', serif;
+            white-space: nowrap;
         }
-        #visitorMap {
-            height: 320px;
-            width: 100%;
+        .table-wrapper td {
+            padding: 9px 14px;
+            border-bottom: 1px solid rgb(175, 208, 228);
+            color: rgb(155, 155, 186);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-family: '宋体', serif;
         }
-
-        /* ===== 联系信息 ===== */
-        .contact-block {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 20px 28px;
-            border: 1px solid #e4ecf4;
-            margin-bottom: 8px;
+        .table-wrapper tr:hover td {
+            background: rgb(175, 208, 228);
+            opacity: 0.5;
         }
-        .contact-block h3 {
-            font-size: 18px;
-            color: #0b1a2e;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .contact-block p {
-            color: #2a4a64;
-            font-size: 14px;
-            line-height: 1.8;
-            margin-bottom: 4px;
-        }
-        .contact-block .email {
-            color: #2a6a9e;
-            text-decoration: none;
-        }
-        .contact-block .email:hover {
-            text-decoration: underline;
-        }
-        .contact-block .lab-name {
-            font-size: 13px;
-            color: #5a7a94;
+        .table-wrapper .empty-row td {
+            text-align: center;
+            padding: 36px;
+            color: rgb(155, 155, 186);
+            opacity: 0.6;
+            font-family: '宋体', serif;
         }
 
         /* ===== 页脚 ===== */
         .footer {
-            margin-top: 32px;
-            padding: 20px 0 8px;
-            border-top: 1px solid #dce6f0;
+            margin-top: 28px;
+            padding: 14px 0 6px;
+            border-top: 1px solid rgb(175, 208, 228);
             text-align: center;
-            font-size: 13px;
-            color: #5a7a94;
+            font-size: 12px;
+            color: rgb(155, 155, 186);
+            font-family: '宋体', serif;
+        }
+        .footer .footer-logos {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: rgb(155, 155, 186);
         }
 
         /* ===== 响应式 ===== */
-        @media (max-width: 640px) {
-            .navbar { padding: 14px 20px; flex-direction: column; align-items: flex-start; }
-            .navbar-menu { flex-wrap: wrap; gap: 16px; font-size: 14px; }
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 16px; flex-direction: column; align-items: stretch; }
+            .navbar .brand { flex-wrap: wrap; gap: 10px; }
+            .navbar .brand .logo-group { flex-wrap: wrap; }
+            .navbar .nav-actions { justify-content: space-between; }
             .container { padding: 16px; }
-            .search-hero { padding: 18px; }
-            .search-hero .search-row input { min-width: 120px; }
-            .page-header h1 { font-size: 26px; }
-            .two-col-grid { grid-template-columns: 1fr; }
+            .hero { padding: 20px; }
+            .hero h1 { font-size: 24px; }
+            .hero .top-logos { gap: 20px; }
+            .search-area { padding: 18px; }
+            .search-area .search-row select { min-width: 120px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .section-grid { grid-template-columns: 1fr 1fr; }
+            .table-toolbar { flex-direction: column; align-items: stretch; }
+            .table-toolbar .actions { flex-wrap: wrap; }
+            .table-toolbar .actions input { min-width: 100px; flex: 1; }
+            .drug-header .drug-name { font-size: 20px; }
+            .nav-tabs button { padding: 8px 16px; font-size: 13px; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .feedback-form .form-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 400px) {
+            .section-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .hero .top-logos .logo-block .logo-circle { width: 40px; height: 40px; font-size: 16px; }
+            .hero .top-logos .logo-block .logo-text { font-size: 12px; }
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        .table-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: rgb(175, 208, 228);
+            border-radius: 10px;
+        }
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f0f2f5;
         }
     </style>
 </head>
@@ -424,250 +812,539 @@
 
 <!-- ===== 顶部导航 ===== -->
 <nav class="navbar">
-    <div class="navbar-brand">
-        <span class="logo-icon">🧬</span>
-        <span>MolBiC</span>
-        <span class="brand-quote">「mol bark」</span>
-        <span class="brand-sub">MolBiC: A database of Molecular Bioactivities in Cells</span>
+    <div class="brand">
+        <div class="logo-group">
+            <div class="logo-item">
+                <div class="logo-placeholder hebmu">HB</div>
+                <span>河北医科大学</span>
+            </div>
+            <div class="logo-item">
+                <div class="logo-placeholder cspc">石</div>
+                <span>石药集团</span>
+            </div>
+        </div>
+        <div>
+            <span class="title">丁苯酞/伏环孢素 知识库</span>
+            <span class="sub">NBP · VOC Knowledge Base</span>
+        </div>
     </div>
-    <div class="navbar-menu">
-        <a href="#" class="active">Home</a>
-        <a href="#">Search</a>
-        <a href="#">Manual</a>
-        <a href="#">About</a>
+    <div class="nav-actions">
+        <span class="page-indicator" id="pageIndicator">🏠 首页</span>
+        <span class="back-btn" id="backBtn" style="display:none;" onclick="goBack()">← 返回</span>
     </div>
 </nav>
 
-<!-- ===== 主体 ===== -->
+<!-- ===== 主容器 ===== -->
 <div class="container">
 
-    <!-- 页面标题 -->
-    <div class="page-header">
-        <h1><span class="highlight">MolBiC</span> · Molecular Bioactivities in Cells</h1>
-        <div class="tagline">细胞中分子生物活性数据库 · 化合物-蛋白相互作用 (CPI)</div>
+    <!-- ============================================================ -->
+    <!-- 页面1：首页（搜索 + Contact） -->
+    <!-- ============================================================ -->
+    <div class="page active" id="pageHome">
+        <div class="hero">
+            <div class="top-logos">
+                <div class="logo-block">
+                    <div class="logo-circle hebmu">HB</div>
+                    <div class="logo-text">
+                        河北医科大学<br>
+                        <small>Hebei Medical University</small>
+                    </div>
+                </div>
+                <div style="font-size:24px;color:rgb(175,208,228);">✦</div>
+                <div class="logo-block">
+                    <div class="logo-circle cspc">石</div>
+                    <div class="logo-text">
+                        石药集团<br>
+                        <small>CSPC Pharmaceutical Group</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider-line"></div>
+
+            <h1>丁苯酞 / 伏环孢素 <span class="highlight">知识库</span></h1>
+            <div class="tagline">NBP · VOC Knowledge Base for Drug R&D</div>
+
+            <div class="desc">
+                <strong>📖 数据库简介</strong><br>
+                本知识库整合了丁苯酞（NBP）和伏环孢素（VOC）两个药物品种的研发与产业化数据，
+                涵盖药物基本信息、文献资料、处方工艺、质量检测、稳定性数据、AI模型等8个核心模块。
+                旨在为药物研发提供数据支持与决策辅助，推动产学研协同创新。
+            </div>
+        </div>
+
+        <!-- 导航标签 -->
+        <div class="nav-tabs">
+            <button class="active" data-tab="searchTab" onclick="switchTab('searchTab')">🔍 搜索</button>
+            <button data-tab="contactTab" onclick="switchTab('contactTab')">📧 Contact</button>
+        </div>
+
+        <!-- ===== 搜索区域 ===== -->
+        <div class="search-area active" id="searchTab">
+            <div class="label">🔍 选择药物</div>
+            <div class="search-row">
+                <select id="drugSelect">
+                    <option value="">— 请选择药物 —</option>
+                </select>
+                <button id="viewDrugBtn" onclick="viewDrug()">📊 查看药物详情</button>
+            </div>
+        </div>
+
+        <!-- ===== Contact 区域 ===== -->
+        <div class="search-area" id="contactTab">
+            <div class="label" style="color:rgb(124,207,211);">📧 联系我们</div>
+
+            <div class="contact-grid">
+                <!-- 左侧：联系方式 -->
+                <div class="contact-card">
+                    <h3>📋 联系方式</h3>
+                    <div class="contact-item">
+                        <span class="icon">🏛️</span>
+                        <span><span class="label">单位</span> 河北医科大学 · 药学院</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="icon">📍</span>
+                        <span><span class="label">地址</span> 河北省石家庄市长安区中山东路361号</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="icon">📞</span>
+                        <span><span class="label">电话</span> 0311-8626XXXX</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="icon">📧</span>
+                        <span><span class="label">邮箱</span> drugrd@hebmu.edu.cn</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="icon">🌐</span>
+                        <span><span class="label">网址</span> www.hebmu.edu.cn</span>
+                    </div>
+                    <div class="contact-item" style="border-bottom:none;margin-top:4px;font-size:12px;color:rgb(175,208,228);">
+                        <span class="icon">💊</span>
+                        <span>石药集团 · 恩必普药业 联合共建</span>
+                    </div>
+                </div>
+
+                <!-- 右侧：反馈表单 + 反馈列表 -->
+                <div class="contact-card">
+                    <h3>✉️ 反馈与建议</h3>
+
+                    <!-- 反馈表单 -->
+                    <div class="feedback-form" style="border:none;padding:0;margin-top:0;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>姓名 *</label>
+                                <input type="text" id="feedbackName" placeholder="请输入您的姓名">
+                            </div>
+                            <div class="form-group">
+                                <label>邮箱 *</label>
+                                <input type="email" id="feedbackEmail" placeholder="请输入您的邮箱">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>问题类型</label>
+                            <select id="feedbackType">
+                                <option value="数据问题">数据问题</option>
+                                <option value="功能建议">功能建议</option>
+                                <option value="使用咨询">使用咨询</option>
+                                <option value="合作意向">合作意向</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>反馈内容 *</label>
+                            <textarea id="feedbackContent" placeholder="请详细描述您的问题或建议..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn-submit" onclick="submitFeedback()">📤 提交反馈</button>
+                            <button class="btn-reset-feedback" onclick="resetFeedbackForm()">清空</button>
+                        </div>
+                    </div>
+
+                    <!-- 反馈列表 -->
+                    <div style="margin-top:16px;">
+                        <div style="font-size:13px;font-weight:600;color:rgb(124,207,211);margin-bottom:8px;">📋 历史反馈</div>
+                        <div class="feedback-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>姓名</th>
+                                        <th>类型</th>
+                                        <th>内容</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="feedbackListBody">
+                                    <tr>
+                                        <td>张研究员</td>
+                                        <td>数据问题</td>
+                                        <td>丁苯酞溶出度数据需要更新</td>
+                                        <td>✅ 已处理</td>
+                                    </tr>
+                                    <tr>
+                                        <td>李老师</td>
+                                        <td>功能建议</td>
+                                        <td>建议增加批量导出功能</td>
+                                        <td>⏳ 处理中</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-grid" id="homeStats"></div>
     </div>
 
-    <!-- ===== 搜索区 ===== -->
-    <div class="search-hero">
-        <div class="search-label">🔬 Search for Compound Protein Interactions (CPI) in cell</div>
-        <div class="search-row">
-            <input type="text" id="searchInput" placeholder="Please enter your search here">
-            <button id="searchBtn">🔍 Search</button>
-            <button onclick="resetSearch()" style="background:#dce6f0;color:#0b1a2e;">Reset</button>
-        </div>
-        <div class="search-hint">
-            💡 Examples: <span>PubChem CID</span> <span>Uniprot ID</span> <span>Cellosaurus ID</span> <span>IUPAC Name</span> ......
-        </div>
+    <!-- ============================================================ -->
+    <!-- 页面2：药物卡片 -->
+    <!-- ============================================================ -->
+    <div class="page" id="pageDrug">
+        <div class="drug-header" id="drugHeader"></div>
+        <div class="section-grid" id="sectionGrid"></div>
     </div>
 
-    <!-- ===== 搜索结果（默认隐藏） ===== -->
-    <div class="search-results" id="searchResults">
-        <div class="result-header">
-            <span class="count" id="resultCount">找到 0 条结果</span>
-            <button class="close-btn" onclick="closeResults()">✕</button>
+    <!-- ============================================================ -->
+    <!-- 页面3：数据表格 -->
+    <!-- ============================================================ -->
+    <div class="page" id="pageTable">
+        <div class="table-toolbar">
+            <div class="info" id="tableInfo">📊 数据表格</div>
+            <div class="actions">
+                <input type="text" id="tableSearchInput" placeholder="🔍 搜索关键词...">
+                <button class="btn-search" onclick="searchTable()">搜索</button>
+                <button class="btn-reset" onclick="resetTable()">重置</button>
+                <button class="btn-export" onclick="exportTable()">📥 导出CSV</button>
+            </div>
         </div>
-        <div id="resultBody">
+        <div class="table-wrapper">
             <table>
-                <thead id="resultHead"></thead>
-                <tbody id="resultTableBody"></tbody>
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody">
+                    <tr><td class="empty-row">加载中...</td></tr>
+                </tbody>
             </table>
         </div>
+        <div style="margin-top:10px;font-size:13px;color:rgb(155,155,186);font-family:'宋体',serif;" id="tableCount">共 0 条记录</div>
     </div>
 
-    <!-- ===== 两栏布局 ===== -->
-    <div class="two-col-grid">
-
-        <!-- 左栏：Function -->
-        <div class="feature-card">
-            <h3>📌 Function in MolBiC</h3>
-            <ul>
-                <li><span class="li-icon">🔍</span> Biomarker region search</li>
-                <li><span class="li-icon">🧬</span> Pan-cancer CMR</li>
-                <li><span class="li-icon">📊</span> MethMarker evaluation</li>
-                <li><span class="li-icon">📄</span> Literature search</li>
-            </ul>
-        </div>
-
-        <!-- 右栏：Statistics -->
-        <div class="stat-list">
-            <h3>📊 Statistics for MolBiC</h3>
-            <ul>
-                <li><span class="li-icon">📈</span> 统计化合物的临床分区信息，并且标注活性分区柱状图</li>
-                <li><span class="li-icon">🧬</span> 蛋白家族和CPI数量的统计图</li>
-                <li><span class="li-icon">🏢</span> 研究CPI数量前20的细胞系，柱状图</li>
-                <li><span class="li-icon">🧫</span> 研究CPI数量前20的细胞蛋白，柱状图</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- ===== 引用 ===== -->
-    <div class="citation-block">
-        <strong>📄 Citation</strong><br>
-        L. T. Shen, X. N. Sun, Z. Chen, Y. Guo, Z. Y. Shen, Y. Song, W. X. Xin, H. Y. Ding, X. Y. Ma, W. B. Xu, W. Y. Zhou, J. X. Che, L. L. Tan, L. S. Chen, S. Q. Chen, X. W. Dong, L. Fang, F. Zhu, <strong><em>ADCdb: the database of antibody-drug conjugates</em></strong>. <strong>Nucleic Acids Research</strong> 52(D1): D1097-D1109 (2024). PMID: 37831118
-    </div>
-
-    <!-- ===== 地图 ===== -->
-    <div class="map-container">
-        <div class="map-header">🌍 Visitor Map</div>
-        <div id="visitorMap"></div>
-    </div>
-
-    <!-- ===== 联系信息 ===== -->
-    <div class="contact-block">
-        <h3>📧 Correspondence</h3>
-        <p>
-            <strong>Prof. Feng ZHU</strong> (<a href="mailto:zhufeng@zju.edu.cn" class="email">zhufeng@zju.edu.cn</a>)<br>
-            <span class="lab-name">Lab of innovative Drug Research and Bioinformatics</span>
-        </p>
-        <p>
-            <strong>Prof. Xiaowu DONG</strong> (<a href="mailto:dongxw@zju.edu.cn" class="email">dongxw@zju.edu.cn</a>)<br>
-            <span class="lab-name">Lab of New Intervention Strategy for Innovation Drug R&D</span>
-        </p>
-        <p>
-            <strong>Prof. Luo FANG</strong> (<a href="mailto:fangluo@zjcc.org.cn" class="email">fangluo@zjcc.org.cn</a>)<br>
-            <span class="lab-name">Pharmacy Department of Zhejiang Cancer Hospital</span>
-        </p>
-    </div>
-
-    <div class="footer">
-        © 2026 MolBiC · 分子生物活性数据库 &nbsp;|&nbsp; 数据仅供科研参考
-    </div>
 </div>
 
-<!-- ===== Leaflet 地图 JS ===== -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- ===== 页脚 ===== -->
+<div class="footer">
+    <div class="footer-logos">
+        <span>🏛️ 河北医科大学</span>
+        <span>✦</span>
+        <span>💊 石药集团</span>
+        <span>✦</span>
+        <span>🧬 丁苯酞/伏环孢素知识库</span>
+    </div>
+    © 2026 丁苯酞/伏环孢素知识库 &nbsp;|&nbsp; 数据仅供科研参考
+</div>
 
 <script>
 // ================================================================
-//  📊 您 的 数 据 （供搜索使用）
+// ⬇️⬇️⬇️ 您的8个数据表 ⬇️⬇️⬇️
 // ================================================================
-const DATA = [
-    {
-        "Name": "4ZGM",
-        "Title": "Crystal structure of Semaglutide peptide backbone in complex with the GLP-1 receptor extracellular domain",
-        "Method": "X-RAY DIFFRACTION",
-        "Resolution": "1.80 Å"
-    },
-    {
-        "Name": "7FIM",
-        "Title": "Cryo-EM structure of the tirzepatide (LY3298176)-bound human GLP-1R-Gs complex",
-        "Method": "ELECTRON MICROSCOPY",
-        "Resolution": "3.40 Å"
-    },
-    {
-        "Name": "7FIY",
-        "Title": "Cryo-EM structure of the tirzepatide-bound human GIPR-Gs complex",
-        "Method": "ELECTRON MICROSCOPY",
-        "Resolution": "3.40 Å"
-    },
-    {
-        "Name": "8XIR",
-        "Title": "Structure of pasireotide-SSTR3 G protein complex",
-        "Method": "ELECTRON MICROSCOPY",
-        "Resolution": "2.52 Å"
-    }
+
+// 表1: 药物
+const DATA_DRUGS = [
+  {"drug_id":"DRUG001","drug_name":"丁苯酞","drug_code":"NBP","category":"化药","indication":"缺血性脑卒中","mechanism":"改善脑部微循环","dosage_form":"软胶囊/注射剂","route":"口服/静脉","molecular_weight":190.24,"logp":2.8,"solubility":"不溶于水","source_type":"enterprise","is_confidential":true},
+  {"drug_id":"DRUG002","drug_name":"伏环孢素","drug_code":"VOC","category":"化药","indication":"免疫抑制","mechanism":"钙调神经磷酸酶抑制","target":"calcineurin","dosage_form":"口服制剂","route":"口服","molecular_weight":1214.5,"logp":4.5,"solubility":"难溶于水","source_type":"enterprise","is_confidential":true}
 ];
+
+// 表2: 文献
+const DATA_LITERATURE = [
+  {"lit_id":"LIT001","drug_id":"DRUG001","title":"丁苯酞治疗缺血性脑卒中的临床研究","authors":"张三;李四","journal":"中国药学杂志","pub_year":2023,"doi":"10.1234/xxxx","pmid":".","doc_type":"literature","abstract_text":"本研究评估丁苯酞治疗缺血性脑卒中的有效性和安全性","is_processed":false},
+  {"lit_id":"LIT002","drug_id":"DRUG002","title":"伏环孢素免疫抑制机制研究","authors":"王五;赵六","journal":"中国药理学报","pub_year":2024,"doi":"10.5678/yyyy","pmid":".","doc_type":"literature","abstract_text":"探讨伏环孢素对T细胞活化的抑制作用","is_processed":false},
+  {"lit_id":"LIT003","drug_id":"DRUG001","title":"丁苯酞制剂专利","authors":"石药集团","journal":".","pub_year":2022,"doi":"CN202210000000","pmid":".","doc_type":"patent","abstract_text":"丁苯酞软胶囊及其制备方法","is_processed":false}
+];
+
+// 表3: 参比制剂
+const DATA_REFERENCE = [
+  {"ref_id":"REF001","drug_id":"DRUG001","brand_name":"恩必普","manufacturer":"石药集团","strength":"100mg","dosage_form":"软胶囊","approval_date":"2020-01-01","reference_source":"国家药监局","country":"中国"},
+  {"ref_id":"REF002","drug_id":"DRUG001","brand_name":"恩必普注射液","manufacturer":"石药集团","strength":"25mg/mL","dosage_form":"注射剂","approval_date":"2020-06-01","reference_source":"国家药监局","country":"中国"},
+  {"ref_id":"REF003","drug_id":"DRUG002","brand_name":"伏环孢素胶囊","manufacturer":"石药集团","strength":"50mg","dosage_form":"胶囊","approval_date":"2023-03-01","reference_source":"国家药监局","country":"中国"}
+];
+
+// 表4: 处方
+const DATA_FORMULATIONS = [
+  {"formulation_id":"FORM001","drug_id":"DRUG001","formulation_code":"NBP-CAP-01","dosage_form":"软胶囊","ingredients":"{\"大豆油\":\"60%\",\"PEG400\":\"40%\"}","api_concentration":100,"design_space":"{\"temp\":\"40-60℃\",\"time\":\"30-60min\"}","is_reference":true,"is_confidential":true},
+  {"formulation_id":"FORM002","drug_id":"DRUG001","formulation_code":"NBP-INJ-01","dosage_form":"注射剂","ingredients":"{\"氯化钠\":\"0.9%\",\"注射用水\":\"余量\"}","api_concentration":25,"design_space":"{\"pH\":\"6.0-8.0\"}","is_reference":true,"is_confidential":true},
+  {"formulation_id":"FORM003","drug_id":"DRUG002","formulation_code":"VOC-TAB-01","dosage_form":"口服制剂","ingredients":"{\"乳糖\":\"50%\",\"微晶纤维素\":\"50%\"}","api_concentration":50,"design_space":"{\"硬度\":\"80-120N\"}","is_reference":false,"is_confidential":true}
+];
+
+// 表5: 工艺参数
+const DATA_PROCESS = [
+  {"process_id":"PROC001","drug_id":"DRUG001","formulation_id":"FORM001","batch_no":"NBP-2024-001","process_step":"混合","param_name":"搅拌速度","param_value":300,"unit":"rpm","is_cpp":true,"lower_limit":250,"upper_limit":350,"target_value":300},
+  {"process_id":"PROC002","drug_id":"DRUG001","formulation_id":"FORM001","batch_no":"NBP-2024-001","process_step":"混合","param_name":"混合时间","param_value":45,"unit":"min","is_cpp":true,"lower_limit":30,"upper_limit":60,"target_value":45},
+  {"process_id":"PROC003","drug_id":"DRUG001","formulation_id":"FORM001","batch_no":"NBP-2024-001","process_step":"灌装","param_name":"灌装速度","param_value":200,"unit":"粒/min","is_cpp":false,"lower_limit":150,"upper_limit":250,"target_value":200},
+  {"process_id":"PROC004","drug_id":"DRUG002","formulation_id":"FORM003","batch_no":"VOC-2024-001","process_step":"压片","param_name":"压片压力","param_value":15,"unit":"kN","is_cpp":true,"lower_limit":12,"upper_limit":18,"target_value":15},
+  {"process_id":"PROC005","drug_id":"DRUG002","formulation_id":"FORM003","batch_no":"VOC-2024-001","process_step":"包衣","param_name":"包衣温度","param_value":45,"unit":"℃","is_cpp":false,"lower_limit":40,"upper_limit":50,"target_value":45}
+];
+
+// 表6: 质量数据
+const DATA_QUALITY = [
+  {"quality_id":"QUAL001","drug_id":"DRUG001","batch_no":"NBP-2024-001","test_item":"有关物质","test_result":0.12,"unit":"%","specification_lower":0,"specification_upper":0.5,"is_cqa":true,"test_method":"HPLC","test_date":"2024-01-15"},
+  {"quality_id":"QUAL002","drug_id":"DRUG001","batch_no":"NBP-2024-001","test_item":"含量测定","test_result":99.8,"unit":"%","specification_lower":95,"specification_upper":105,"is_cqa":true,"test_method":"HPLC","test_date":"2024-01-15"},
+  {"quality_id":"QUAL003","drug_id":"DRUG001","batch_no":"NBP-2024-001","test_item":"溶出度","test_result":95.2,"unit":"%","specification_lower":85,"specification_upper":null,"is_cqa":true,"test_method":"桨法","test_date":"2024-01-15"},
+  {"quality_id":"QUAL004","drug_id":"DRUG002","batch_no":"VOC-2024-001","test_item":"有关物质","test_result":0.08,"unit":"%","specification_lower":0,"specification_upper":0.3,"is_cqa":true,"test_method":"HPLC","test_date":"2024-02-10"},
+  {"quality_id":"QUAL005","drug_id":"DRUG002","batch_no":"VOC-2024-001","test_item":"含量测定","test_result":100.2,"unit":"%","specification_lower":95,"specification_upper":105,"is_cqa":true,"test_method":"HPLC","test_date":"2024-02-10"},
+  {"quality_id":"QUAL006","drug_id":"DRUG002","batch_no":"VOC-2024-001","test_item":"溶出度","test_result":88.5,"unit":"%","specification_lower":80,"specification_upper":null,"is_cqa":true,"test_method":"桨法","test_date":"2024-02-10"}
+];
+
+// 表7: 稳定性数据
+const DATA_STABILITY = [
+  {"stability_id":"STAB001","drug_id":"DRUG001","batch_no":"NBP-2024-001","condition":"加速","temperature":40,"humidity":75,"time_point":"0天","time_days":0,"test_item":"含量","test_result":99.8,"unit":"%"},
+  {"stability_id":"STAB002","drug_id":"DRUG001","batch_no":"NBP-2024-001","condition":"加速","temperature":40,"humidity":75,"time_point":"1月","time_days":30,"test_item":"含量","test_result":99.5,"unit":"%"},
+  {"stability_id":"STAB003","drug_id":"DRUG001","batch_no":"NBP-2024-001","condition":"加速","temperature":40,"humidity":75,"time_point":"3月","time_days":90,"test_item":"含量","test_result":98.9,"unit":"%"},
+  {"stability_id":"STAB004","drug_id":"DRUG001","batch_no":"NBP-2024-001","condition":"长期","temperature":25,"humidity":60,"time_point":"0天","time_days":0,"test_item":"含量","test_result":99.8,"unit":"%"},
+  {"stability_id":"STAB005","drug_id":"DRUG001","batch_no":"NBP-2024-001","condition":"长期","temperature":25,"humidity":60,"time_point":"3月","time_days":90,"test_item":"含量","test_result":99.6,"unit":"%"},
+  {"stability_id":"STAB006","drug_id":"DRUG002","batch_no":"VOC-2024-001","condition":"加速","temperature":40,"humidity":75,"time_point":"0天","time_days":0,"test_item":"含量","test_result":100.2,"unit":"%"},
+  {"stability_id":"STAB007","drug_id":"DRUG002","batch_no":"VOC-2024-001","condition":"加速","temperature":40,"humidity":75,"time_point":"1月","time_days":30,"test_item":"含量","test_result":99.8,"unit":"%"},
+  {"stability_id":"STAB008","drug_id":"DRUG002","batch_no":"VOC-2024-001","condition":"加速","temperature":40,"humidity":75,"time_point":"3月","time_days":90,"test_item":"含量","test_result":99.1,"unit":"%"}
+];
+
+// 表8: AI模型
+const DATA_MODELS = [
+  {"model_id":"MODEL001","drug_id":"DRUG001","model_name":"丁苯酞工艺优化模型","model_type":"process_optimization","algorithm":"XGBoost","hyperparameters":"{\"n_estimators\":100,\"max_depth\":6}","performance_metrics":"{\"r2\":0.92,\"rmse\":0.15}","training_dataset_id":"DS001","is_validated":true,"validation_results":"{\"r2\":0.90,\"rmse\":0.18}","version":"v1.0","status":"deployed"},
+  {"model_id":"MODEL002","drug_id":"DRUG001","model_name":"丁苯酞杂质预测模型","model_type":"impurity_prediction","algorithm":"RandomForest","hyperparameters":"{\"n_estimators\":100,\"max_depth\":10}","performance_metrics":"{\"r2\":0.88,\"rmse\":0.22}","training_dataset_id":"DS002","is_validated":true,"validation_results":"{\"r2\":0.85,\"rmse\":0.25}","version":"v1.1","status":"validated"},
+  {"model_id":"MODEL003","drug_id":"DRUG002","model_name":"伏环孢素PBPK模型","model_type":"pk_prediction","algorithm":"Bayesian","hyperparameters":"{\"iterations\":5000,\"chains\":4}","performance_metrics":"{\"r2\":0.95,\"rmse\":0.08}","training_dataset_id":"DS003","is_validated":false,"validation_results":null,"version":"v0.8","status":"developing"},
+  {"model_id":"MODEL004","drug_id":"DRUG002","model_name":"伏环孢素剂量优化模型","model_type":"dosage_optimization","algorithm":"DeepLearning","hyperparameters":"{\"layers\":3,\"units\":64}","performance_metrics":"{\"r2\":0.82,\"rmse\":0.35}","training_dataset_id":"DS004","is_validated":false,"validation_results":null,"version":"v0.5","status":"developing"}
+];
+
+// ⬆️⬆️⬆️ 数据配置结束 ⬆️⬆️⬆️
 // ================================================================
 
-let headers = [];
-let filteredData = [];
+// ================================================================
+// 应用逻辑
+// ================================================================
 
-function getHeaders() {
-    if (!DATA || !DATA.length) return [];
-    return Object.keys(DATA[0]);
+const ALL_DATA = {
+    drugs: DATA_DRUGS,
+    literature: DATA_LITERATURE,
+    reference: DATA_REFERENCE,
+    formulations: DATA_FORMULATIONS,
+    process: DATA_PROCESS,
+    quality: DATA_QUALITY,
+    stability: DATA_STABILITY,
+    models: DATA_MODELS
+};
+
+const SECTIONS = [
+    { key: 'literature', icon: '📄', label: '文献资料', desc: '文献、专利、审评资料' },
+    { key: 'reference', icon: '📋', label: '参比制剂', desc: '参比制剂信息' },
+    { key: 'formulations', icon: '💊', label: '处方信息', desc: '处方和辅料配比' },
+    { key: 'process', icon: '⚙️', label: '工艺参数', desc: '工艺参数和CPP' },
+    { key: 'quality', icon: '📊', label: '质量检测', desc: '质量检测和CQA' },
+    { key: 'stability', icon: '📈', label: '稳定性数据', desc: '稳定性考察数据' },
+    { key: 'models', icon: '🤖', label: 'AI模型', desc: 'AI模型和PBPK' }
+];
+
+let currentDrugId = null;
+let currentSection = null;
+let currentTableData = [];
+let currentTableHeaders = [];
+let historyStack = [];
+
+// ===== Tab切换 =====
+function switchTab(tabId) {
+    document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    document.querySelectorAll('.search-area').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
 }
 
-// ===== 搜索功能 =====
-function performSearch() {
-    const query = document.getElementById('searchInput').value.trim().toLowerCase();
-    const resultsDiv = document.getElementById('searchResults');
-    const resultBody = document.getElementById('resultTableBody');
-    const resultHead = document.getElementById('resultHead');
-    const resultCount = document.getElementById('resultCount');
+// ===== 导航函数 =====
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    const indicator = document.getElementById('pageIndicator');
+    const backBtn = document.getElementById('backBtn');
+    if (pageId === 'pageHome') {
+        indicator.textContent = '🏠 首页';
+        backBtn.style.display = 'none';
+    } else if (pageId === 'pageDrug') {
+        indicator.textContent = '💊 药物详情';
+        backBtn.style.display = 'inline-block';
+    } else if (pageId === 'pageTable') {
+        indicator.textContent = '📊 数据表格';
+        backBtn.style.display = 'inline-block';
+    }
+}
 
-    if (!query || !DATA.length) {
-        resultsDiv.classList.remove('active');
+function goBack() {
+    if (historyStack.length > 0) {
+        const target = historyStack.pop();
+        if (target === 'pageHome') { showPage('pageHome'); }
+        else if (target === 'pageDrug') { showPage('pageDrug'); renderDrugPage(currentDrugId); }
+    } else { showPage('pageHome'); }
+}
+
+// ===== 首页 =====
+function renderHome() {
+    const select = document.getElementById('drugSelect');
+    select.innerHTML = '<option value="">— 请选择药物 —</option>';
+    DATA_DRUGS.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.drug_id;
+        opt.textContent = `${d.drug_name} (${d.drug_code || ''})`;
+        select.appendChild(opt);
+    });
+    const stats = [
+        { label: '💊 药物', count: DATA_DRUGS.length },
+        { label: '📄 文献', count: DATA_LITERATURE.length },
+        { label: '📋 处方', count: DATA_FORMULATIONS.length },
+        { label: '📊 质量', count: DATA_QUALITY.length },
+        { label: '🤖 AI模型', count: DATA_MODELS.length }
+    ];
+    document.getElementById('homeStats').innerHTML = stats.map(s =>
+        `<div class="stat-card"><div class="number">${s.count}</div><div class="label">${s.label}</div></div>`
+    ).join('');
+}
+
+// ===== 查看药物 =====
+function viewDrug() {
+    const select = document.getElementById('drugSelect');
+    const drugId = select.value;
+    if (!drugId) { alert('请先选择药物'); return; }
+    currentDrugId = drugId;
+    historyStack = ['pageHome'];
+    showPage('pageDrug');
+    renderDrugPage(drugId);
+}
+
+// ===== 药物卡片页 =====
+function renderDrugPage(drugId) {
+    const drug = DATA_DRUGS.find(d => d.drug_id === drugId);
+    if (!drug) return;
+    document.getElementById('drugHeader').innerHTML = `
+        <div><span class="drug-name">${drug.drug_name}</span><span class="drug-code">${drug.drug_code || ''}</span>
+        <span style="margin-left:12px;font-size:14px;color:rgb(155,155,186);font-weight:400;">${drug.category || ''}</span></div>
+        <div class="drug-meta"><span>📌 ${drug.indication || '—'}</span><span class="tag">💊 ${drug.dosage_form || '—'}</span></div>
+    `;
+    const counts = {};
+    SECTIONS.forEach(s => {
+        counts[s.key] = ALL_DATA[s.key] ? ALL_DATA[s.key].filter(d => d.drug_id === drugId).length : 0;
+    });
+    document.getElementById('sectionGrid').innerHTML = SECTIONS.map(s =>
+        `<div class="section-card" onclick="viewSection('${drugId}','${s.key}')">
+            <div class="icon">${s.icon}</div>
+            <div class="title">${s.label}</div>
+            <div class="count">${counts[s.key] || 0} 条记录</div>
+            <div class="badge-count">${s.desc}</div>
+            <div class="arrow-hint">点击查看 →</div>
+        </div>`
+    ).join('');
+}
+
+// ===== 查看栏目 =====
+function viewSection(drugId, sectionKey) {
+    currentDrugId = drugId;
+    currentSection = sectionKey;
+    historyStack.push('pageDrug');
+    showPage('pageTable');
+    renderTable(drugId, sectionKey);
+}
+
+// ===== 渲染表格 =====
+function renderTable(drugId, sectionKey) {
+    const section = SECTIONS.find(s => s.key === sectionKey);
+    const data = ALL_DATA[sectionKey] ? ALL_DATA[sectionKey].filter(d => d.drug_id === drugId) : [];
+    currentTableData = data;
+    if (data.length === 0) {
+        document.getElementById('tableInfo').innerHTML = `📊 ${section.label} <small>暂无数据</small>`;
+        document.getElementById('tableHead').innerHTML = '';
+        document.getElementById('tableBody').innerHTML = `<tr><td class="empty-row">暂无数据</td></tr>`;
+        document.getElementById('tableCount').textContent = '共 0 条记录';
         return;
     }
+    const headers = Object.keys(data[0]);
+    currentTableHeaders = headers;
+    const drug = DATA_DRUGS.find(d => d.drug_id === drugId);
+    document.getElementById('tableInfo').innerHTML = `📊 ${section.label} · ${drug ? drug.drug_name : ''} <small>(${data.length} 条)</small>`;
+    document.getElementById('tableHead').innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+    document.getElementById('tableBody').innerHTML = data.map(row =>
+        `<tr>${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : '—'}</td>`).join('')}</tr>`
+    ).join('');
+    document.getElementById('tableCount').textContent = `共 ${data.length} 条记录`;
+    document.getElementById('tableSearchInput').value = '';
+}
 
-    headers = getHeaders();
-    filteredData = DATA.filter(row => {
-        return headers.some(h => {
-            const val = row[h];
-            return val && String(val).toLowerCase().includes(query);
-        });
-    });
-
-    // 显示结果区域
-    resultsDiv.classList.add('active');
-    resultHead.innerHTML = '';
-    resultBody.innerHTML = '';
-
-    if (filteredData.length === 0) {
-        resultCount.textContent = '🔍 没有匹配的结果';
-        resultBody.innerHTML = `<tr><td colspan="${headers.length}" class="no-result">没有找到匹配的数据</td></tr>`;
+// ===== 搜索表格 =====
+function searchTable() {
+    const query = document.getElementById('tableSearchInput').value.trim().toLowerCase();
+    if (!query) { resetTable(); return; }
+    const filtered = currentTableData.filter(row => currentTableHeaders.some(h => {
+        const val = row[h]; return val && String(val).toLowerCase().includes(query);
+    }));
+    if (filtered.length === 0) {
+        document.getElementById('tableBody').innerHTML = `<tr><td class="empty-row">🔍 没有匹配的数据</td></tr>`;
+        document.getElementById('tableCount').textContent = '共 0 条记录';
         return;
     }
+    document.getElementById('tableBody').innerHTML = filtered.map(row =>
+        `<tr>${currentTableHeaders.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : '—'}</td>`).join('')}</tr>`
+    ).join('');
+    document.getElementById('tableCount').textContent = `共 ${filtered.length} 条记录 (筛选结果)`;
+}
 
-    resultCount.textContent = `✅ 找到 ${filteredData.length} 条结果`;
+function resetTable() {
+    document.getElementById('tableSearchInput').value = '';
+    renderTable(currentDrugId, currentSection);
+}
 
-    // 表头
-    const trHead = document.createElement('tr');
-    headers.forEach(h => {
-        const th = document.createElement('th');
-        th.textContent = h;
-        trHead.appendChild(th);
-    });
-    resultHead.appendChild(trHead);
-
-    // 数据行
-    filteredData.forEach(row => {
-        const tr = document.createElement('tr');
-        headers.forEach(h => {
-            const td = document.createElement('td');
-            td.textContent = row[h] !== undefined && row[h] !== null ? row[h] : '';
-            tr.appendChild(td);
+// ===== 导出CSV =====
+function exportTable() {
+    if (!currentTableData || currentTableData.length === 0) { alert('没有数据可导出'); return; }
+    const rows = [currentTableHeaders.join(',')];
+    currentTableData.forEach(row => {
+        const line = currentTableHeaders.map(h => {
+            let val = row[h] || '';
+            if (val.includes(',') || val.includes('"') || val.includes('\n')) { val = `"${val.replace(/"/g, '""')}"`; }
+            return val;
         });
-        resultBody.appendChild(tr);
+        rows.push(line.join(','));
     });
+    const blob = new Blob(['\uFEFF' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const drug = DATA_DRUGS.find(d => d.drug_id === currentDrugId);
+    link.download = `${drug ? drug.drug_name : 'data'}_${currentSection}_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
 }
 
-function resetSearch() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('searchResults').classList.remove('active');
+// ===== 反馈功能 =====
+function submitFeedback() {
+    const name = document.getElementById('feedbackName').value.trim();
+    const email = document.getElementById('feedbackEmail').value.trim();
+    const type = document.getElementById('feedbackType').value;
+    const content = document.getElementById('feedbackContent').value.trim();
+    if (!name || !email || !content) { alert('请填写完整信息（姓名、邮箱、反馈内容）'); return; }
+    const tbody = document.getElementById('feedbackListBody');
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${name}</td><td>${type}</td><td>${content}</td><td>⏳ 待处理</td>`;
+    tbody.prepend(row);
+    alert('✅ 反馈已提交，感谢您的建议！');
+    resetFeedbackForm();
 }
 
-function closeResults() {
-    document.getElementById('searchResults').classList.remove('active');
+function resetFeedbackForm() {
+    document.getElementById('feedbackName').value = '';
+    document.getElementById('feedbackEmail').value = '';
+    document.getElementById('feedbackContent').value = '';
+    document.getElementById('feedbackType').value = '数据问题';
 }
 
-// ===== 绑定事件 =====
-document.getElementById('searchBtn').addEventListener('click', performSearch);
-document.getElementById('searchInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        performSearch();
-    }
+// ===== 搜索回车 =====
+document.getElementById('tableSearchInput')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') searchTable();
 });
 
-// ===== 初始化地图 =====
-function initMap() {
-    const map = L.map('visitorMap').setView([30.2741, 120.1551], 5); // 杭州为中心
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    // 添加标记（示例：杭州）
-    L.marker([30.2741, 120.1551]).addTo(map)
-        .bindPopup('📍 MolBiC · 浙江大学');
-}
-
-// ===== 页面加载完成后初始化 =====
-document.addEventListener('DOMContentLoaded', function() {
-    initMap();
-});
+// ===== 初始化 =====
+renderHome();
 </script>
 </body>
 </html>
